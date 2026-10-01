@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma de Capacitación</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif; }
+  body { background:#f0f4f8; min-height:100vh; display:flex; justify-content:center; padding:24px; }
+  .card { background:#fff; border-radius:14px; box-shadow:0 6px 24px rgba(0,0,0,.10); max-width:680px; width:100%; padding:32px; }
+  .pasos { display:flex; gap:8px; margin-bottom:24px; }
+  .paso { flex:1; text-align:center; font-size:12px; color:#9aa5b1; padding-bottom:8px; border-bottom:3px solid #e3e8ee; }
+  .paso.activo { color:#1a56db; border-color:#1a56db; font-weight:600; }
+  .paso.ok { color:#0e9f6e; border-color:#0e9f6e; }
+  h1 { font-size:22px; color:#1f2937; margin-bottom:4px; }
+  h2 { font-size:18px; color:#1f2937; margin-bottom:12px; }
+  p.sub { color:#6b7280; font-size:14px; margin-bottom:20px; }
+  label { display:block; font-size:13px; font-weight:600; color:#374151; margin:14px 0 6px; }
+  input, select { width:100%; padding:11px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; }
+  input:focus, select:focus { outline:none; border-color:#1a56db; box-shadow:0 0 0 3px rgba(26,86,219,.15); }
+  .btn { display:inline-block; margin-top:20px; padding:12px 24px; border:none; border-radius:8px; background:#1a56db; color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  .btn:hover:not(:disabled) { background:#1648b8; }
+  .btn:disabled { background:#c3cad4; cursor:not-allowed; }
+  .btn-sec { background:#e5e7eb; color:#374151; margin-right:8px; }
+  .btn-sec:hover:not(:disabled) { background:#d1d5db; }
+  .slide { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:20px; margin-bottom:16px; }
+  .slide h3 { color:#1a56db; font-size:16px; margin-bottom:10px; }
+  .slide p, .slide li { color:#374151; font-size:14px; line-height:1.65; }
+  .slide ul { padding-left:20px; margin-top:8px; }
+  .progreso { height:8px; background:#e5e7eb; border-radius:4px; overflow:hidden; margin-bottom:8px; }
+  .progreso div { height:100%; background:#1a56db; transition:width .3s; }
+  .lbl-progreso { font-size:12px; color:#6b7280; margin-bottom:12px; }
+  .pregunta { border:1px solid #e5e7eb; border-radius:10px; padding:16px; margin-bottom:14px; }
+  .pregunta p { font-weight:600; font-size:14px; color:#1f2937; margin-bottom:10px; }
+  .opcion { display:flex; align-items:center; gap:8px; font-size:14px; color:#374151; padding:6px 0; cursor:pointer; font-weight:400; }
+  .opcion input { width:auto; }
+  .nota-final { text-align:center; padding:24px; }
+  .nota-num { font-size:56px; font-weight:700; color:#1a56db; }
+  .nota-aprob { color:#0e9f6e; font-weight:600; }
+  .nota-repr { color:#e02424; font-weight:600; }
+  .estado-envio { margin-top:16px; font-size:13px; padding:10px; border-radius:8px; text-align:center; display:none; }
+  .ok { background:#e7f8f1; color:#0e9f6e; display:block!important; }
+  .err { background:#fde8e8; color:#e02424; display:block!important; }
+  .aviso { background:#fff7e6; border:1px solid #ffd591; color:#ad6800; font-size:12px; border-radius:8px; padding:10px; margin-top:16px; }
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="card">
+
+  <div class="pasos">
+    <div class="paso activo" id="p1">1 · Registro</div>
+    <div class="paso" id="p2">2 · Contenido</div>
+    <div class="paso" id="p3">3 · Evaluación</div>
+    <div class="paso" id="p4">4 · Resultado</div>
+  </div>
+
+  <!-- PASO 1: REGISTRO -->
+  <section id="v-registro">
+    <h1>Bienvenido a la plataforma de capacitación</h1>
+    <p class="sub">Ingresa tus datos y selecciona tu cargo para ver el material educativo correspondiente.</p>
+    <label for="nombre">Nombre completo *</label>
+    <input id="nombre" type="text" placeholder="Ej: Ana María Pérez">
+    <label for="correo">Correo electrónico *</label>
+    <input id="correo" type="email" placeholder="Ej: ana.perez@empresa.com">
+    <label for="cargo">Perfil / Cargo *</label>
+    <select id="cargo">
+      <option value="">— Selecciona tu cargo —</option>
+      <option value="asesor">Asesor Comercial</option>
+      <option value="coordinador">Coordinador de Operaciones</option>
+      <option value="analista">Analista de Datos</option>
+    </select>
+    <button class="btn" onclick="iniciar()">Comenzar</button>
+  </section>
+
+  <!-- PASO 2: MATERIAL EDUCATIVO -->
+  <section id="v-material" style="display:none">
+    <h1 id="titulo-material"></h1>
+    <p class="sub">Navega por todo el contenido para desbloquear la evaluación.</p>
+    <div class="progreso"><div id="barra" style="width:0%"></div></div>
+    <div class="lbl-progreso" id="lbl-progreso"></div>
+    <div class="slide" id="slide"></div>
+    <button class="btn btn-sec" id="btn-ant" onclick="slideAnt()">← Anterior</button>
+    <button class="btn" id="btn-sig" onclick="slideSig()">Siguiente →</button>
+    <button class="btn" id="btn-eval" style="display:none;background:#0e9f6e" onclick="irAQuiz()">Ir a la evaluación</button>
+  </section>
+
+  <!-- PASO 3: EVALUACIÓN -->
+  <section id="v-quiz" style="display:none">
+    <h1>Evaluación de conocimientos</h1>
+    <p class="sub">Responde todas las preguntas. Tus respuestas se guardarán en el registro.</p>
+    <div id="lista-preguntas"></div>
+    <button class="btn" onclick="calificar()">Enviar evaluación</button>
+  </section>
+
+  <!-- PASO 4: RESULTADO -->
+  <section id="v-resultado" style="display:none">
+    <h1 style="text-align:center">Resultado final</h1>
+    <div class="nota-final">
+      <div class="nota-num" id="nota-num"></div>
+      <p id="nota-msg"></p>
+      <p style="margin-top:10px;font-size:13px;color:#6b7280">Tus respuestas quedaron registradas en la hoja de cálculo.</p>
+    </div>
+    <div class="estado-envio" id="estado-envio"></div>
+    <div style="text-align:center"><button class="btn btn-sec" onclick="reiniciar()">Finalizar</button></div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN: pega aquí la URL de tu aplicación web de
+   Google Apps Script (ver INSTRUCCIONES.md). Si se deja vacía,
+   la app funciona en modo demostración sin guardar datos.
+   ============================================================ */
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu-iAOXMHYQTBQLu5Bg4U0ed8-4jEhEFFSn3Q8HfTtsb6QQPp24RfvAbAf7J6T1tvIVw/exec";
+
+/* ================== CONTENIDO POR CARGO ================== */
+const CONTENIDO = {
+  asesor: {
+    titulo: "Material educativo · Asesor Comercial",
+    minimo: 80,
+    slides: [
+      { t:"Proceso de venta", h:"<p>Toda venta profesional sigue un proceso de 6 etapas:</p><ul><li><b>Prospección:</b> identificar clientes potenciales.</li><li><b>Contacto:</b> primer acercamiento con el cliente.</li><li><b>Descubrimiento:</b> conocer sus necesidades reales.</li><li><b>Propuesta:</b> presentar la solución adecuada.</li><li><b>Cierre:</b> concretar la transacción.</li><li><b>Seguimiento:</b> asegurar satisfacción y recompra.</li></ul>" },
+      { t:"Descubrimiento de necesidades", h:"<p>La técnica más poderosa para descubrir necesidades es hacer <b>preguntas abiertas</b>: qué, cómo, cuándo, para qué. Escucha activamente el 80% del tiempo y habla solo el 20%.</p><p>Un buen asesor no vende productos: vende soluciones a problemas concretos del cliente.</p>" },
+      { t:"Manejo de objeciones", h:"<p>Las objeciones son oportunidades, no rechazos. Ante una objeción de precio:</p><ul><li>No bajes el precio de inmediato.</li><li>Reconoce la objeción y agradece al cliente.</li><li>Argumenta el <b>valor</b> y los beneficios, no solo el costo.</li></ul>" },
+      { t:"Seguimiento y fidelización", h:"<p>El seguimiento post-venta genera confianza, fideliza al cliente y produce recomendaciones. Un cliente satisfecho recompra y refiere a otros.</p><p>Registra siempre cada contacto en el CRM: fecha, acuerdos y próximos pasos.</p>" }
+    ],
+    quiz: [
+      { p:"¿Cuál es la primera etapa del proceso de venta?", o:["Cierre","Prospección","Seguimiento","Propuesta"], c:1 },
+      { p:"¿Qué técnica permite descubrir las necesidades del cliente?", o:["Descuentos agresivos","Preguntas abiertas","Cierre forzado","Envío de folletos"], c:1 },
+      { p:"Ante una objeción de precio, lo correcto es:", o:["Bajar el precio de inmediato","Ignorar la objeción","Argumentar beneficios y valor","Terminar la conversación"], c:2 },
+      { p:"¿Para qué sirve el seguimiento post-venta?", o:["Para molestar al cliente","Para fidelizar y generar recompra","Para cobrar de más","No tiene ningún fin"], c:1 },
+      { p:"¿Qué es un KPI comercial?", o:["Un tipo de cliente","Un indicador de desempeño","Un producto","Un descuento"], c:1 }
+    ]
+  },
+  coordinador: {
+    titulo: "Material educativo · Coordinador de Operaciones",
+    minimo: 80,
+    slides: [
+      { t:"Seguridad en el trabajo", h:"<p>La seguridad es prioridad absoluta. Todo trabajador debe usar el <b>EPP</b> (Equipo de Protección Personal) adecuado a su tarea: casco, guantes, gafas, calzado de seguridad, etc.</p><p>Ante cualquier incidente: <b>primero atiende a la persona</b>, luego reporta y luego se analizan las causas.</p>" },
+      { t:"Gestión visual de procesos", h:"<p>El tablero <b>Kanban</b> permite visualizar el flujo de trabajo en tres columnas: Por hacer → En progreso → Hecho. Facilita detectar cuellos de botella y balancear la carga del equipo.</p>" },
+      { t:"Indicadores (KPI)", h:"<p>Un <b>KPI</b> (Indicador Clave de Desempeño) mide si los procesos cumplen los objetivos. Ejemplos operativos: cumplimiento de entregas, tiempos de ciclo, mermas, accidentes por mes.</p><p>Lo que no se mide, no se puede mejorar.</p>" },
+      { t:"Liderazgo de equipos", h:"<p>La <b>charla diaria de 5 minutos</b> alinea al equipo: qué se hizo ayer, qué se hará hoy y qué obstáculos existen. El coordinador facilita, escucha y remueve bloqueos; no solo da órdenes.</p>" }
+    ],
+    quiz: [
+      { p:"¿Qué significa EPP?", o:["Equipo de Protección Personal","Estándar de Proceso Productivo","Evaluación de Personal Permanente","Equipo de Primeros Pasos"], c:0 },
+      { p:"¿Qué herramienta visual controla el estado de los procesos con columnas?", o:["Hoja de cálculo","Kanban","Correo electrónico","Factura"], c:1 },
+      { p:"¿Qué significa KPI?", o:["Key Process Item","Indicador Clave de Desempeño","Kit de Protección Integral","Kilo Producto Interno"], c:1 },
+      { p:"Ante un accidente laboral, lo primero es:", o:["Esconder la información","Seguir trabajando","Atender a la persona y reportar","Buscar a quién culpar"], c:2 },
+      { p:"La reunión breve diaria de alineación del equipo se conoce como:", o:["Asamblea anual","Charla de 5 minutos","Auditoría externa","Capacitación formal"], c:1 }
+    ]
+  },
+  analista: {
+    titulo: "Material educativo · Analista de Datos",
+    minimo: 80,
+    slides: [
+      { t:"Dato vs información", h:"<p>Un <b>dato</b> es un valor aislado (ej: 42). La <b>información</b> es el dato con contexto que permite tomar decisiones (ej: 42 quejas de clientes este mes, 30% más que el mes anterior).</p>" },
+      { t:"Limpieza y validación", h:"<p>Antes de analizar hay que <b>limpiar y validar</b> los datos: eliminar duplicados, corregir formatos, tratar valores vacíos y verificar fuentes. Un análisis sobre datos sucios produce conclusiones erróneas.</p>" },
+      { t:"Tablas dinámicas", h:"<p>La <b>tabla dinámica</b> resume grandes volúmenes de información: agrupa, filtra y calcula totales, promedios y porcentajes sin fórmulas complejas. Es la herramienta básica de todo analista.</p>" },
+      { t:"Visualización y ética", h:"<p>Para tendencias en el tiempo usa <b>gráficos de líneas</b>; para comparar categorías, barras; para partes de un todo, pastel o donut.</p><p>Y recuerda: los datos personales deben tratarse conforme a la política de <b>protección de datos y privacidad</b> de la empresa.</p>" }
+    ],
+    quiz: [
+      { p:"¿Cuál es la diferencia entre dato e información?", o:["Son lo mismo","La información es dato con contexto","El dato siempre es texto","La información no sirve para decidir"], c:1 },
+      { p:"¿Qué herramienta de Excel resume grandes volúmenes de datos?", o:["Tabla dinámica","Autoformato","Búsqueda de imágenes","Correo"], c:0 },
+      { p:"¿Qué se debe hacer antes de analizar un conjunto de datos?", o:["Crear el gráfico final","Limpiar y validar los datos","Enviarlos por correo","Borrar las filas vacías sin revisar"], c:1 },
+      { p:"¿Qué gráfico es más adecuado para mostrar una tendencia en el tiempo?", o:["Pastel","Líneas","Barras horizontales","Dispersión 3D"], c:1 },
+      { p:"Los datos personales deben tratarse según:", o:["La conveniencia del analista","La política de protección de datos y privacidad","Ninguna norma","Solo el correo del jefe"], c:1 }
+    ]
+  }
+};
+
+/* ================== LÓGICA DE LA APLICACIÓN ================== */
+let estado = { slide:0, respuestas:[], nota:0, cargo:null };
+
+function marcarPaso(n) {
+  for (let i=1;i<=4;i++) {
+    const el = document.getElementById('p'+i);
+    el.className = 'paso' + (i<n ? ' ok' : i===n ? ' activo' : '');
+  }
+}
+function mostrar(id) {
+  ['v-registro','v-material','v-quiz','v-resultado'].forEach(v =>
+    document.getElementById(v).style.display = (v===id ? 'block' : 'none'));
+}
+
+function iniciar() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const correo = document.getElementById('correo').value.trim();
+  const cargo  = document.getElementById('cargo').value;
+  if (!nombre || !correo.includes('@') || !cargo) { alert('Completa todos los campos correctamente.'); return; }
+  estado = { nombre, correo, cargo, slide:0, respuestas:[], nota:0 };
+  document.getElementById('titulo-material').textContent = CONTENIDO[cargo].titulo;
+  marcarPaso(2); mostrar('v-material'); renderSlide();
+}
+
+function renderSlide() {
+  const mat = CONTENIDO[estado.cargo];
+  const s = mat.slides[estado.slide];
+  document.getElementById('slide').innerHTML = '<h3>'+s.t+'</h3>'+s.h;
+  const total = mat.slides.length, n = estado.slide;
+  document.getElementById('barra').style.width = ((n+1)/total*100)+'%';
+  document.getElementById('lbl-progreso').textContent = 'Módulo '+(n+1)+' de '+total;
+  document.getElementById('btn-ant').disabled = (n===0);
+  document.getElementById('btn-sig').style.display = (n===total-1) ? 'none' : 'inline-block';
+  document.getElementById('btn-eval').style.display = (n===total-1) ? 'inline-block' : 'none';
+}
+function slideAnt(){ estado.slide--; renderSlide(); }
+function slideSig(){ estado.slide++; renderSlide(); }
+
+function irAQuiz() {
+  const mat = CONTENIDO[estado.cargo];
+  marcarPaso(3); mostrar('v-quiz');
+  document.getElementById('lista-preguntas').innerHTML = mat.quiz.map((q,i) =>
+    '<div class="pregunta"><p>'+(i+1)+'. '+q.p+'</p>' +
+    q.o.map((op,j) =>
+      '<label class="opcion"><input type="radio" name="q'+i+'" value="'+j+'"> '+op+'</label>'
+    ).join('') + '</div>'
+  ).join('');
+}
+
+function calificar() {
+  const mat = CONTENIDO[estado.cargo];
+  estado.respuestas = [];
+  let aciertos = 0;
+  for (let i=0;i<mat.quiz.length;i++) {
+    const sel = document.querySelector('input[name="q'+i+'"]:checked');
+    if (!sel) { alert('Responde la pregunta '+(i+1)+' antes de enviar.'); return; }
+    const idx = Number(sel.value);
+    const ok = (idx === mat.quiz[i].c);
+    if (ok) aciertos++;
+    estado.respuestas.push({
+      pregunta: mat.quiz[i].p,
+      seleccionada: mat.quiz[i].o[idx],
+      correcta: mat.quiz[i].o[mat.quiz[i].c],
+      acierto: ok
+    });
+  }
+  estado.nota = Math.round(aciertos / mat.quiz.length * 100);
+  marcarPaso(4); mostrar('v-resultado');
+  document.getElementById('nota-num').textContent = estado.nota + '%';
+  const aprob = estado.nota >= mat.minimo;
+  document.getElementById('nota-msg').innerHTML =
+    'Obtuviste <b>'+aciertos+' de '+mat.quiz.length+'</b> respuestas correctas · ' +
+    '<span class="'+(aprob?'nota-aprob':'nota-repr')+'">'+(aprob?'¡Aprobado!':'No aprobado, nota mínima '+mat.minimo+'%')+'</span>';
+  enviarASheet();
+}
+
+async function enviarASheet() {
+  const box = document.getElementById('estado-envio');
+  if (!GOOGLE_SCRIPT_URL) {
+    box.className = 'estado-envio err';
+    box.textContent = 'Modo demostración: no hay URL de Google Script configurada. Las respuestas NO se guardaron. Pega la URL en GOOGLE_SCRIPT_URL.';
+    return;
+  }
+  const payload = {
+    nombre: estado.nombre, correo: estado.correo, cargo: estado.cargo,
+    nota: estado.nota, respuestas: estado.respuestas
+  };
+  box.className = 'estado-envio'; box.style.display='block'; box.style.background='#eef4ff'; box.style.color='#1a56db';
+  box.textContent = 'Guardando respuestas en Google Sheets…';
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    box.className = 'estado-envio ok';
+    box.textContent = '✓ Respuestas guardadas correctamente en el Google Sheet.';
+  } catch(e) {
+    // Algunos navegadores bloquean la respuesta por CORS; los datos suelen haberse guardado igual.
+    await fetch(GOOGLE_SCRIPT_URL, { method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(payload) });
+    box.className = 'estado-envio ok';
+    box.textContent = '✓ Respuestas enviadas al Google Sheet (verifica la hoja "Respuestas").';
+  }
+}
+
+function reiniciar() { location.reload(); }
+</script>
+</body>
+</html>
